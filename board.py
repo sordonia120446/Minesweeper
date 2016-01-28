@@ -12,6 +12,7 @@ class Board():
         self.mines = input('How many mines?')
         self.size = int(self.size)
         self.mines = int(self.mines)
+        self.numSafeLocations = self.size**2 - self.mines
         for row in range(self.size):
             self.myBoard.append([])
             self.playerView.append([])
@@ -23,6 +24,7 @@ class Board():
         '''Randomly places mines onto the map'''
         myMineLocations = []
 
+        # Generates random non-duplicate mine locations
         index = 0
         while index < self.mines:
             myRandomLocation = self.generateMineLocation()
@@ -32,6 +34,7 @@ class Board():
                 myMineLocations.append(myRandomLocation)
                 index += 1
 
+        # 
         for location in myMineLocations:
             self.myBoard[location[0]][location[1]] = 'M'
 
@@ -86,9 +89,27 @@ class Board():
         col -= 1
         self.playerView[row][col] = self.myBoard[row][col]
 
-    def endGame(self):
+    def isMine(self,cell):
+        # Break up the tuple into row and column values.  
+        row = cell[0]
+        col = cell[1]
+        # Take into account python iteration starting at 0 upwards.  
+        row -= 1
+        col -= 1
+
+        if self.myBoard[row][col] == 'M':
+            return True
+        else:
+            return False
+
+    def endGame(self,cell):
         '''Determine conditions to finish the game!'''
-        if self.myBoard == self.playerView:
+
+        if self.isMine(cell):
+            self.gameOn = False
+            print('You blew up!')
+
+        if self.numRevealedLocations == self.numSafeLocations:
             self.gameOn = False
             print('You win!!!')
             print('Come back and play again soon!  :)')
@@ -97,24 +118,23 @@ class Board():
 
     def play(self):
         '''Run a while loop while gameOn is set to True.  Takes in user input to reveal a row & col.  Checks endGame() to see if the game ended.'''
+        self.numRevealedLocations = 0
         while self.gameOn:
             b.printPlayerView()
             print('Choose which row and column to reveal!')
             playerRow = input('Which row #?  ')
             playerCol = input('Which col #?  ')
+            cell = (playerRow,playerCol)
 
             if playerRow > (self.size + 1) or playerCol > (self.size + 1):
                 continue
             elif playerRow > 0 and playerCol > 0:
-                cell = (playerRow,playerCol)
                 self.revealLocation(cell)
                 #b.printPlayerView()
-                b.endGame()
+                self.numRevealedLocations += 1
+                b.endGame(cell)
             else:
                 continue
-
-            
-
 
 
 
